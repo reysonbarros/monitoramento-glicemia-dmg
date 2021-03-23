@@ -1,4 +1,4 @@
-package com.giacom.java.kubernetes.config;
+package com.reyson.java.kubernetes.config;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.annotation.Bean;

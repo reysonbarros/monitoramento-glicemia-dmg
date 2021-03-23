@@ -17,7 +17,7 @@ spec:
       spec:
         containers:
           - name: myapp
-            image: java-k8s:latest
+            image: dmg-k8s:latest
             imagePullPolicy: Never
             ports:
               - containerPort: 8080
@@ -29,17 +29,17 @@ spec:
               httpGet:
                 path: /app/actuator/health/liveness
                 port: 8080
-              initialDelaySeconds: 30
+              initialDelaySeconds: 120
             readinessProbe:
               httpGet:
                 path: /app/actuator/health/readiness
                 port: 8080
-              initialDelaySeconds: 30
+              initialDelaySeconds: 120
             resources:
               requests:
                 memory: "512Mi"
                 cpu: "0.5"
               limits:
                 memory: "1024Mi"
-                cpu: "1"
+                cpu: "2"
 

@@ -1,119 +1,117 @@
-# Java and Kubernetes
+# DMG
 
-Show how you can move your spring boot application to docker and kubernetes.
-This project is a demo for the series of posts on dev.to
-https://dev.to/sandrogiacom/kubernetes-for-java-developers-setup-41nk
+Este projeto é um beta para o Monitoramento da Diabetes Mellitus Gestacional(DMG) baseado na publicação Tratamento do Diabetes Mellitus Gestacional no Brasil.
+Referência: 
+https://www.diabetes.org.br/profissionais/images/pdf/Consenso_Brasileiro_Manejo_DMG_2019.pdf
 
-## Part one - base app:
+Créditos ao Sandro Giacom pela disponibilização da estrutura base deste projeto.
 
-### Requirements:
+## Parte 1 - base app:
 
-**Docker and Make (Optional)**
+### Requisitos:
 
-**Java 15**
+**Docker e Make (Opcional)**
 
-Help to install tools:
+**Java 14**
+
+Ajuda para instalar as ferramentas:
 
 https://github.com/sandrogiacom/k8s
 
-### Build and run application:
+### Construir(build) e executar(run) aplicação:
 
-Spring boot and mysql database running on docker
+Spring boot e banco de dados MySQL executando no docker
 
-**Clone from repository**
+**Clone do repositório**
 ```bash
-git clone https://github.com/sandrogiacom/java-kubernetes.git
+git clone https://github.com/reysonbarros/monitoramento-glicemia-dmg.git
 ```
 
-**Build application**
+**Construir aplicação**
 ```bash
-cd java-kubernetes
+cd monitoramento-glicemia-dmg
 mvn clean install
 ```
 
-**Start the database**
+**Inicializar o banco de dados**
 ```bash
 make run-db
 ```
 
-**Run application**
+**Executar aplicação**
 ```bash
-java --enable-preview -jar target/java-kubernetes.jar
+java --enable-preview -jar target/dmg-kubernetes.jar
 ```
 
-**Check**
+**Verificação**
 
-http://localhost:8080/app/users
+http://localhost:8080/app/glicemias
 
-http://localhost:8080/app/hello
+## Parte 2 - app no Docker:
 
-## Part two - app on Docker:
-
-Create a Dockerfile:
+Criar um Dockerfile:
 
 ```yaml
-FROM openjdk:15-alpine
+FROM openjdk:14-alpine
 RUN mkdir /usr/myapp
-COPY target/java-kubernetes.jar /usr/myapp/app.jar
+COPY target/dmg-kubernetes.jar /usr/myapp/app.jar
 WORKDIR /usr/myapp
 EXPOSE 8080
 ENTRYPOINT [ "sh", "-c", "java --enable-preview $JAVA_OPTS -jar app.jar" ]
 ```
 
-**Build application and docker image**
+**Construir aplicação e imagem docker**
 
 ```bash
 make build
 ```
 
-Create and run the database
+Criar e executar o banco de dados
 ```bash
 make run-db
 ```
 
-Create and run the application
+Criar e executar a aplicação
 ```bash
 make run-app
 ```
 
-**Check**
+**Verificação**
 
-http://localhost:8080/app/users
+http://localhost:8080/app/glicemia
 
-http://localhost:8080/app/hello
-
-Stop all:
+Parar tudo(app + banco):
 
 `
 docker stop mysql57 myapp
 `
 
-## Part three - app on Kubernetes:
+## Parte 3 - app no Kubernetes:
 
-We have an application and image running in docker
-Now, we deploy application in a kubernetes cluster running in our machine
+Nós temos uma aplicação e imagem executando no docker.
+Agora nós implantamos uma aplicação em um cluster kubernetes executando em nossa máquina.
 
 Prepare
 
-### Start minikube
+### Iniciar minikube
 `
 make k-setup
 `
- start minikube, enable ingress and create namespace dev-to
+ iniciar minikube, habilitar ingress e criar namespace dev-to
 
-### Check IP
+### Verificar IP(Internet Protocol)
 
 `
 minikube -p dev.to ip
 `
 
-### Minikube dashboard
+### Painel de Controle do Minikube
 
 `
 minikube -p dev.to dashboard
 `
 
-### Deploy database
+### Implantar banco de dados
 
 create mysql deployment and service
 
@@ -125,7 +123,7 @@ make k-deploy-db
 kubectl get pods -n dev-to
 `
 
-OR
+ou
 
 `
 watch k get pods -n dev-to
@@ -140,39 +138,39 @@ kubectl logs -n dev-to -f <pod_name>
 kubectl port-forward -n dev-to <pod_name> 3306:3306
 `
 
-## Build application and deploy
+## Construir aplicação e implantar
 
-build app
+Construir app
 
 `
 make k-build-app
 ` 
 
-create docker image inside minikube machine:
+Criar imagem docker dentro da máquina minikube
 
 `
 make k-build-image
 `
 
-OR
+ou
 
 `
 make k-cache-image
 `  
 
-create app deployment and service:
+Criar implantação do app e serviço:
 
 `
 make k-deploy-app
 ` 
 
-**Check**
+**Verificar**
 
 `
 kubectl get services -n dev-to
 `
 
-To access app:
+Para acessar o app:
 
 `
 minikube -p dev.to service -n dev-to myapp --url
@@ -180,38 +178,45 @@ minikube -p dev.to service -n dev-to myapp --url
 
 Ex:
 
-http://172.17.0.3:32594/app/users
-http://172.17.0.3:32594/app/hello
+http://192.168.99.116:31479/app/glicemias
 
-## Check pods
+
+## Verificar pods
 
 `
 kubectl get pods -n dev-to
 `
 
 `
-kubectl -n dev-to logs myapp-6ccb69fcbc-rqkpx
+kubectl -n dev-to logs myapp-6bbb46f69f-75ld4
 `
 
-## Map to dev.local
+## Mapear para dev.local
 
-get minikube IP
+Obter minikube IP
 `
 minikube -p dev.to ip
 ` 
 
-Edit `hosts` 
+Editar `hosts` 
 
 `
 sudo vim /etc/hosts
 `
+ou
 
-Replicas
+`
+No Windows abrir o cmd como Administrador:
+C:\Windows\system32\drivers\etc\hosts
+ex: 192.168.99.116 dev.local
+`
+
+Réplicas
 `
 kubectl get rs -n dev-to
 `
 
-Get and Delete pod
+Obter and deletar pod
 `
 kubectl get pods -n dev-to
 `
@@ -220,53 +225,78 @@ kubectl get pods -n dev-to
 kubectl delete pod -n dev-to myapp-f6774f497-82w4r
 `
 
-Scale
+Escala
 `
 kubectl -n dev-to scale deployment/myapp --replicas=2
 `
 
-Test replicas
+Testar réplicas
 `
 while true
-do curl "http://dev.local/app/hello"
+do curl "http://dev.local/app/glicemias"
 echo
 sleep 2
 done
 `
-Test replicas with wait
 
-`
-while true
-do curl "http://dev.local/app/wait"
-echo
-done
-`
-
-## Check app url
+## Verificar url do app
 `minikube -p dev.to service -n dev-to myapp --url`
 
-Change your IP and PORT as you need it
+Alterar seu IP and PORT conforme necessário
 
 `
-curl -X GET http://dev.local/app/users
+curl -X GET http://dev.local/app/glicemias
 `
 
-Add new User
+Adicionar nova Glicemia
 `
-curl --location --request POST 'http://dev.local/app/users' \
+curl --location --request POST 'http://dev.local/app/glicemias' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "name": "new user",
-    "birthDate": "2010-10-01"
+    "nome": "Paciente 1",
+    "data": "2021-03-23",
+    "periodo": "JEJUM", 
+    "refeicao": null,
+    "valor": 71.16    
 }'
+------------------
+curl --location --request POST 'http://dev.local/app/glicemias' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "nome": "Paciente 1",
+    "data": "2021-03-23",
+    "periodo": "POS_PRANDIAL_1H", 
+    "refeicao": "LANCHE",
+    "valor": 132    
+}'
+------------------
+curl --location --request POST 'http://dev.local/app/glicemias' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "nome": "Paciente 1",
+    "data": "2021-03-23",
+    "periodo": "POS_PRANDIAL_1H", 
+    "refeicao": "ALMOCO",
+    "valor": 139.99    
+}'
+------------------
+curl --location --request POST 'http://dev.local/app/glicemias' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "nome": "Paciente 1",
+    "data": "2021-03-22",
+    "periodo": "POS_PRANDIAL_1H", 
+    "refeicao": "JANTAR",
+    "valor": 80.44    
+}'
+
+
 `
 
-## Part four - debug app:
+## Parte 4 - debug app:
 
-add   JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=n"
+adicionar JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=n -Xms256m -Xmx512m -XX:MaxMetaspaceSize=128m"
  
-change CMD to ENTRYPOINT on Dockerfile
-
 `
 kubectl get pods -n=dev-to
 `
@@ -275,7 +305,7 @@ kubectl get pods -n=dev-to
 kubectl port-forward -n=dev-to <pod_name> 5005:5005
 `
 
-## KubeNs and Stern
+## KubeNs e Stern
 
 `
 kubens dev-to
@@ -285,21 +315,22 @@ kubens dev-to
 stern myapp
 ` 
 
-## Start all
+## Iniciar toda a aplicação
 
 `make k:all`
 
 
-## References
+## Referências
 
 https://kubernetes.io/docs/home/
 
 https://minikube.sigs.k8s.io/docs/
 
-## Useful commands
+## Comandos úteis
 
 ```
-##List profiles
+##Lista de perfis
+
 minikube profile list
 
 kubectl top node

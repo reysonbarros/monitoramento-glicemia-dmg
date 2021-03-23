@@ -15,7 +15,7 @@ spec:
         app: mysql
     spec:
       containers:
-        - image: mysql:5.6
+        - image: mysql:5.7
           name: mysql
           env:
             # Use secret in real usage
@@ -26,7 +26,7 @@ spec:
             - name: MYSQL_PASSWORD
               value: myapp_pwd
             - name: MYSQL_DATABASE
-              value: k8s_java
+              value: dmg_java
           ports:
             - containerPort: 3306
               name: mysql
